@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grading: {{ material_section.material.material_name }}</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/css/pluginsCss.css' />
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/plugins.css' />
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/luckysheet/dist/css/luckysheet.css' />
+    <script src="https://cdn.jsdelivr.net/npm/luckysheet/dist/plugins/js/plugin.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luckysheet/dist/luckysheet.umd.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="overflow: hidden;">
+
+<nav class="navbar navbar-dark bg-primary shadow-sm" style="height: 60px;">
+    <div class="container-fluid">
+        <span class="navbar-brand">Correction: {{ role|upper }} | {{ material_section.material.material_name }}</span>
+        <div>
+            <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-light me-2">Back</a>
+            <button onclick="saveExcelData()" class="btn btn-sm btn-light text-primary fw-bold">Save All Marks</button>
+        </div>
+    </div>
+</nav>
+
+<div id="luckysheet" style="margin:0px;padding:0px;position:absolute;width:100%;height:calc(100vh - 60px);left: 0px;top: 60px;"></div>
+
+<script>
+    $(function () {
+        const savedMarks = {{ saved_marks_json|safe|default:"[]" }};
+       const questions = [
+    {% for q in questions %}
+        { 
+            "id": {{ q.id|default:0 }}, 
+            "index": {{ forloop.counter }} // This is the column index (1, 2, 3...)
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+        const mat = "{{ material_section.material.material_name|escapejs }}";
+        const maj = "{{ material_section.material.department.name|escapejs }}";
+        const sec = "{{ material_section.section.name|escapejs }}";
+        const lvl = "{{ material_section.material.level|escapejs }}";
+        const titleText = `Grille Notes: ${mat} - ${maj} | Section: ${sec} | Level: ${lvl}`;
+
+        let initialData = [
+            { "r": 0, "c": 0, "v": titleText, "ht": 1, "vt": 1, "bl": 1, "fc": "#ffffff", "bg": "#1f4e78" },
+            { "r": 1, "c": 0, "v": "No Fictif", "bl": 1, "ht": 1, "vt": 1 },
+            { "r": 1, "c": 1, "v": "Question 1", "bl": 1, "ht": 1 },
+            { "r": 1, "c": 5, "v": "Question 2", "bl": 1, "ht": 1 },
+            { "r": 1, "c": 7, "v": "Question 3", "bl": 1, "ht": 1 },
+            { "r": 1, "c": 11, "v": "Question 4", "bl": 1, "ht": 1 },
+            { "r": 1, "c": 14, "v": "Final", "bl": 1, "ht": 1 },
+            { "r": 2, "c": 1, "v": "1" }, { "r": 2, "c": 2, "v": "2" }, { "r": 2, "c": 3, "v": "3" }, { "r": 2, "c": 4, "v": "4" },
+            { "r": 2, "c": 5, "v": "a" }, { "r": 2, "c": 6, "v": "b" },
+            { "r": 2, "c": 7, "v": "a" }, { "r": 2, "c": 8, "v": "b" }, { "r": 2, "c": 9, "v": "c" }, { "r": 2, "c": 10, "v": "d" },
+            { "r": 2, "c": 11, "v": "a" }, { "r": 2, "c": 12, "v": "b.1" }, { "r": 2, "c": 13, "v": "b.2" },
+            { "r": 2, "c": 14, "v": "Total", "bl": 1, "bg": "#f8f9fa" }
+        ];
+
+        for (let i = 1; i <= 80; i++) {
+            let r = i + 2; 
+            initialData.push({ "r": r, "c": 0, "v": i, "ht": 1 }); 
+
+            let studentMarks = savedMarks.filter(m => m.exam_num == i);
+            studentMarks.forEach(mark => {
+                let qInfo = questions.find(q => q.id === mark.question_id);
+                if (qInfo) {
+                    initialData.push({ "r": r, "c": qInfo.index, "v": mark.val });
+                }
+            });
+
+            initialData.push({ "r": r, "c": 14, "v": { "f": `=SUM(B${r+1}:N${r+1})` }, "bg": "#fdfdfe" });
+        }
+
+        luckysheet.create({
+            container: 'luckysheet',
+            showinfobar: false,
+            lang: 'en',
+            data: [{
+                "name": "Grading",
+                "celldata": initialData,
+                "config": {
+                    "merge": {
+                        "0_0": { "rs": 1, "cs": 15 },
+                        "1_1": { "rs": 1, "cs": 4 },
+                        "1_5": { "rs": 1, "cs": 2 },
+                        "1_7": { "rs": 1, "cs": 4 },
+                        "1_11": { "rs": 1, "cs": 3 }
+                    },
+                    "columnlen": { "0": 60, "14": 80 }
+                }
+            }]
+        });
+    });
+
+    function saveExcelData() {
+        const allData = luckysheet.getAllSheets();
+        fetch(window.location.href, {
+            method: "POST",
+            body: JSON.stringify(allData),
+            headers: { 
+                "X-CSRFToken": "{{ csrf_token }}", 
+                "Content-Type": "application/json" 
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === "success") { 
+                alert("Marks saved!"); 
+                // UPDATED URL NAME HERE
+                window.location.href = "{% url 'dashboard' %}"; 
+            } else {
+                alert("Error: " + data.message);
+            }
+        })
+        .catch(err => {
+            console.error("Save failed:", err);
+            alert("Network error occurred while saving.");
+        });
+    }
+</script>
+</body>
+</html>

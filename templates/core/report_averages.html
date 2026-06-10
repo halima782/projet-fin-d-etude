@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Printable — Averages /100</title>
+  <style>
+    body { font-family: "Times New Roman", Times, serif; margin: 0; background: #f0f0f0; color: #111; }
+    .page {
+      width: 210mm; min-height: 297mm; margin: 10mm auto; background: #fff;
+      padding: 10mm 12mm; box-sizing: border-box; border: 1px solid #ccc;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+    .head-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 0.5rem; font-size: 14px; margin-bottom: 0.5rem;
+    }
+    .head-top .fr { text-align: left; direction: ltr; flex: 1; line-height: 1.35; }
+    .head-top .logo-slot {
+      width: 72px; height: 72px; flex-shrink: 0; border: 1px dashed #999;
+      display: flex; align-items: center; justify-content: center; font-size: 10px; color: #666;
+    }
+    .head-top .ar { text-align: right; flex: 1; line-height: 1.35; }
+    .title-main {
+      text-align: center; font-size: 26px; font-weight: 700; margin: 0.35rem 0 0.25rem;
+    }
+    .year-line { text-align: center; font-size: 18px; margin-bottom: 0.75rem; }
+    .meta-block { direction: rtl; text-align: right; margin: 6px 0; font-size: 15px; line-height: 2; }
+    .meta-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.35rem 1rem; }
+    .meta-label { white-space: nowrap; }
+    .meta-input {
+      border: none; border-bottom: 1px dotted #000; background: transparent;
+      font: inherit; min-width: 7rem; max-width: 22rem; flex: 1 1 10rem;
+      padding: 1px 4px; text-align: right;
+    }
+    .meta-input:focus { outline: 1px solid #333; outline-offset: 1px; }
+    .chk-inline { margin-inline-start: 0.35rem; vertical-align: middle; }
+    table {
+      width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; margin-top: 10px;
+      direction: ltr;
+    }
+    th, td { border: 2px solid #222; padding: 4px 3px; text-align: center; }
+    th { background: #e8e8e8; font-weight: 700; }
+    tr.row-warn td { background: #fff8e1; }
+    .cell-num { width: 8%; }
+    .cell-fig { width: 14%; }
+    .letters-input {
+      width: 95%; border: none; background: transparent; font: inherit 12px "Times New Roman", serif;
+      text-align: center; padding: 2px;
+    }
+    .foot { margin-top: 20px; display: flex; justify-content: space-between; font-size: 16px; direction: rtl; }
+    .pnum { text-align: center; margin-top: 14px; font-size: 22px; }
+    @media print {
+      body { background: #fff; }
+      .page { border: none; margin: 0; width: auto; min-height: auto; }
+      .meta-input, .letters-input { border-bottom-color: #333; }
+      .meta-input:focus, .letters-input:focus { outline: none; }
+    }
+  </style>
+</head>
+<body>
+  {% for page in pages %}
+  <section class="page">
+    <div class="head-top">
+      <div class="fr">
+        Université Libanaise<br>
+        Faculté de Technologie<br>
+        <span>— {{ material_section.section.name }} —</span>
+      </div>
+      <div class="logo-slot">Logo</div>
+      <div class="ar">
+        الجامعة اللبنانية<br>
+        كلية التكنولوجيا<br>
+        <span>— {{ material_section.section.name }} —</span>
+      </div>
+    </div>
+
+    <h1 class="title-main">متوسط العلامات بين المصححين (على 100)</h1>
+    <div class="year-line">العام الجامعي : {{ academic_year.year_label }}</div>
+
+    <div class="meta-block">
+      <div class="meta-row">
+        <span class="meta-label">القسم :</span>
+        <input type="text" class="meta-input" value="{{ material_section.material.department.name }}" aria-label="القسم">
+        <span class="meta-label">اللغة :</span>
+        <input type="text" class="meta-input" value="{{ material_section.section.name }}" aria-label="اللغة">
+        <span class="meta-label">المادة :</span>
+        <input type="text" class="meta-input" value="{{ material_section.material.material_name }}" aria-label="المادة">
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">الفصل :</span>
+        <input type="text" class="meta-input" value="الفصل الدراسي {{ material_section.material.semester }}" aria-label="الفصل">
+        <span class="meta-label">الدورة :</span>
+        <input type="text" class="meta-input" value="{{ session_ar }}" aria-label="الدورة">
+        <span class="meta-label">إسم المصحح :</span>
+        <input type="text" class="meta-input" style="max-width:28rem;" value="{% if corrector_first %}{{ corrector_first }}{% endif %}{% if corrector_second %} — {{ corrector_second }}{% endif %}" aria-label="إسم المصحح">
+        <label class="meta-label"><input type="checkbox" class="chk-inline" aria-label="مصحح 1"> 1</label>
+        <label class="meta-label"><input type="checkbox" class="chk-inline" aria-label="مصحح 2"> 2</label>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th class="cell-num">No. fictif</th>
+          <th class="cell-fig">Note en chiffres /100</th>
+          <th>Note en lettres /100</th>
+          <th class="cell-num">No. fictif</th>
+          <th class="cell-fig">Note en chiffres /100</th>
+          <th>Note en lettres /100</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in page %}
+        <tr class="{% if row.left.highlight or row.right.highlight %}row-warn{% endif %}">
+          <td>{% if row.left %}{{ row.left.number }}{% endif %}</td>
+          <td>{% if row.left %}{{ row.left.total }}{% endif %}</td>
+          <td>{% if row.left %}<input type="text" class="letters-input" value="{{ row.left.words }}" aria-label="Note en lettres">{% endif %}</td>
+          <td>{% if row.right %}{{ row.right.number }}{% endif %}</td>
+          <td>{% if row.right %}{{ row.right.total }}{% endif %}</td>
+          <td>{% if row.right %}<input type="text" class="letters-input" value="{{ row.right.words }}" aria-label="Note en lettres">{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="foot">
+      <div>التاريخ :</div>
+      <div>إمضاء :</div>
+    </div>
+    <div class="pnum">- {{ forloop.counter }}/{{ pages|length }} -</div>
+  </section>
+  {% endfor %}
+</body>
+</html>

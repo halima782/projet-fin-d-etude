@@ -1,0 +1,19 @@
+{% load i18n static %}<!DOCTYPE html>
+<html>
+  <head><title>{% translate "Popup closing…" %}</title></head>
+  <body style="font-family: system-ui, sans-serif; padding: 1.25rem; max-width: 36rem; line-height: 1.5;">
+    <p>{% translate "Closing popup and updating the previous form…" %}</p>
+    <p style="color: #444; font-size: 0.95rem;">
+      {% blocktranslate trimmed %}
+        If this page stays blank: the new tab or window was not opened as an admin popup, so the browser cannot
+        return to the previous form. Close this tab, go back to the other admin page, and either use the main
+        <strong>Users → Add user</strong> link or click the green <strong>+</strong> with a normal single click
+        (do not open in a new tab).
+      {% endblocktranslate %}
+    </p>
+    <script id="django-admin-popup-response-constants"
+            src="{% static "admin/js/popup_response.js" %}"
+            data-popup-response="{{ popup_response_data }}">
+    </script>
+  </body>
+</html>

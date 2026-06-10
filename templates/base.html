@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Exam Grading{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260609">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="{% url 'dashboard' %}">Exam Grading</a>
+      {% if user.is_authenticated %}
+      <nav class="nav">
+        {% if user.is_superuser or user.panel_manager %}
+        <a href="{% url 'admin_panel' %}" class="muted small">Administration</a>
+        {% endif %}
+        <span class="muted">{{ user.username }}</span>
+        <a href="{% url 'logout' %}">Log out</a>
+      </nav>
+      {% endif %}
+    </div>
+  </header>
+  <main class="wrap main">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

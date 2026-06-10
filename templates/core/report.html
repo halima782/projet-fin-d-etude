@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Printable Report</title>
+  <style>
+    body { font-family: "Times New Roman", serif; margin: 0; background: #f5f5f5; }
+    .page {
+      width: 210mm; min-height: 297mm; margin: 10mm auto; background: #fff;
+      padding: 12mm; box-sizing: border-box; border: 1px solid #ddd;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+    .head { text-align: center; margin-bottom: 12px; }
+    .head h2 { margin: 8px 0; font-size: 36px; }
+    .meta { margin: 12px 0 16px; font-size: 20px; text-align: center; }
+    .line { margin: 10px 0; font-size: 18px; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 15px; }
+    th, td { border: 2px solid #333; padding: 6px; text-align: center; }
+    th { background: #e7e7e7; }
+    .foot { margin-top: 24px; display: flex; justify-content: space-between; font-size: 22px; }
+    .pnum { text-align: center; margin-top: 16px; font-size: 32px; }
+    .no-print {
+      padding: 10px 12px;
+      text-align: center;
+      background: #e2e8f0;
+      border-bottom: 1px solid #cbd5e1;
+    }
+    .no-print button {
+      padding: 8px 20px;
+      font: 14px system-ui, sans-serif;
+      cursor: pointer;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+    }
+    .no-print button:hover { background: #1d4ed8; }
+    @media print {
+      /* Margins only here — do not force A4 vs Letter (avoids Edge shrinking the whole page). */
+      @page {
+        margin: 12mm;
+      }
+      .no-print { display: none !important; }
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        background: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .page {
+        box-sizing: border-box !important;
+        width: auto !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        page-break-after: always;
+      }
+      .page:last-child { page-break-after: auto; }
+      .head { margin-bottom: 6px !important; }
+      .head h2 { font-size: 20px !important; margin: 4px 0 !important; }
+      .head div[style*="font-size:34px"] { font-size: 18px !important; }
+      .meta { margin: 6px 0 !important; font-size: 14px !important; }
+      .line { margin: 4px 0 !important; font-size: 12px !important; }
+      .marks-sheet-table {
+        width: 100% !important;
+        font-size: 10px !important;
+      }
+      .marks-sheet-table th,
+      .marks-sheet-table td {
+        vertical-align: middle !important;
+        padding: 2px 3px !important;
+        border-width: 1px !important;
+      }
+      .foot { margin-top: 8px !important; font-size: 12px !important; }
+      .pnum { margin-top: 6px !important; font-size: 16px !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button type="button" onclick="window.print()">Print</button>
+  </div>
+  {% for page in pages %}
+  <section class="page">
+    <div class="head">
+      <div style="display:flex;justify-content:space-between;font-size:20px;">
+        <div style="text-align:left;">
+          Universite Libanaise<br>
+          Faculte de Technologie
+        </div>
+        <div style="text-align:right;">
+          الجامعة اللبنانية<br>
+          كلية التكنولوجيا
+        </div>
+      </div>
+      <h2>{{ sheet_title_ar }}</h2>
+      <div style="font-size:34px;">{{ academic_year.year_label }}</div>
+    </div>
+    <div class="line">القسم : ________ &nbsp;&nbsp;&nbsp; اللغة : ________ &nbsp;&nbsp;&nbsp; المادة : ____________________</div>
+    <div class="line">الفصل : ________ &nbsp;&nbsp;&nbsp; الدورة : ________ &nbsp;&nbsp;&nbsp; اسم المصحح : {{ corrector_name }}</div>
+
+    <table class="marks-sheet-table">
+      <thead>
+        <tr>
+          <th style="width:8%;">No.</th>
+          <th style="width:12%;">Note/100</th>
+          <th style="width:25%;">Note en lettres</th>
+          <th style="width:8%;">No.</th>
+          <th style="width:12%;">Note/100</th>
+          <th style="width:25%;">Note en lettres</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in page %}
+        <tr>
+          <td>{% if row.left %}{{ row.left.number }}{% endif %}</td>
+          <td>{% if row.left %}{{ row.left.total }}{% endif %}</td>
+          <td>{% if row.left %}{{ row.left.words }}{% endif %}</td>
+          <td>{% if row.right %}{{ row.right.number }}{% endif %}</td>
+          <td>{% if row.right %}{{ row.right.total }}{% endif %}</td>
+          <td>{% if row.right %}{{ row.right.words }}{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="foot">
+      <div>التاريخ :</div>
+      <div>إمضاء المصحح :</div>
+    </div>
+    <div class="pnum">- {{ forloop.counter }}/{{ pages|length }} -</div>
+  </section>
+  {% endfor %}
+</body>
+</html>
+

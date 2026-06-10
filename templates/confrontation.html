@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Final Confrontation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light p-5">
+    <div class="container card shadow p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Final Confrontation Report</h2>
+            <a href="{% url 'corrector_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark text-center">
+                <tr>
+                    <th>Exam No.</th>
+                    <th>First Corrector Total</th>
+                    <th>Second Corrector Total</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody class="text-center">
+                {% for res in results %}
+                <tr>
+                    <td>{{ res.exam.exam_number }}</td>
+                    <td>{{ res.first_total|default:"-" }}</td>
+                    <td>{{ res.second_total|default:"-" }}</td>
+                    <td>
+                        {% if res.first_total == res.second_total %}
+                            <span class="badge bg-success">Matches</span>
+                        {% else %}
+                            <span class="badge bg-danger">Discrepancy</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No results found for this material yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

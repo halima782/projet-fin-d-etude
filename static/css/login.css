@@ -1,0 +1,99 @@
+/* static/css/login.css */
+:root {
+    --univ-blue: #003366; /* Deep Oxford Blue */
+    --soft-grey: #f4f7f6;
+    --border-color: #d1d9e6;
+    --white: #ffffff;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', -apple-system, sans-serif;
+    /* Soft, professional solid background */
+    background-color: var(--soft-grey);
+}
+
+.login-card {
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); /* Very soft shadow */
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+h2 {
+    color: var(--univ-blue);
+    font-size: 22px;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.subtitle {
+    color: #6c757d;
+    font-size: 14px;
+    margin-bottom: 2rem;
+}
+
+/* Django Form Styling */
+form p {
+    text-align: left;
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid var(--border-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 15px;
+    color: #333;
+    transition: border-color 0.2s;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--univ-blue);
+}
+
+.login-button {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--univ-blue);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    margin-top: 0.5rem;
+}
+
+.login-button:hover {
+    background-color: #002244;
+}
+
+.footer-note {
+    margin-top: 2rem;
+    font-size: 12px;
+    color: #adb5bd;
+}

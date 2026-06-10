@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Printable — Final marks /100</title>
+  <style>
+    :root {
+      --ink: #141414;
+      --border: #1a1a1a;
+      --header-fill: #e4e4e4;
+      --screen-bg: #e8ecf1;
+    }
+    body {
+      font-family: "Times New Roman", "Traditional Arabic", "Arabic Typesetting", Times, serif;
+      margin: 0;
+      background: var(--screen-bg);
+      color: var(--ink);
+      line-height: 1.4;
+    }
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 12mm auto;
+      background: #fff;
+      padding: 11mm 13mm;
+      box-sizing: border-box;
+      border: 1px solid #c5ccd6;
+      border-radius: 2px;
+      box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+    .head-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      font-size: 13px;
+      margin-bottom: 0.65rem;
+      padding-bottom: 0.55rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .head-top .fr {
+      text-align: left;
+      direction: ltr;
+      flex: 1;
+      line-height: 1.45;
+      font-weight: 600;
+      color: #222;
+    }
+    .head-top .logo-slot {
+      width: 76px;
+      height: 76px;
+      flex-shrink: 0;
+      border: 1px solid #9aa3b2;
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: #64748b;
+      overflow: hidden;
+    }
+    .head-top .logo-slot.logo-slot--image {
+      border: 1px solid #cbd5e1;
+      padding: 3px;
+      background: #fff;
+    }
+    .head-top .logo-slot .logo-img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
+    .head-top .ar {
+      text-align: right;
+      flex: 1;
+      line-height: 1.55;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .title-wrap {
+      text-align: center;
+      margin: 0.5rem 0 0.65rem;
+      padding: 0.35rem 0.5rem 0.55rem;
+      border-bottom: 1px solid #cbd5e1;
+    }
+    .title-main {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0 0 0.2rem;
+      letter-spacing: 0.02em;
+    }
+    .sheet-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0.15rem 0;
+      color: #0f172a;
+    }
+    .year-line {
+      font-size: 17px;
+      margin: 0.35rem 0 0;
+      font-weight: 600;
+    }
+    .meta-block {
+      direction: rtl;
+      text-align: right;
+      margin: 10px 0 12px;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 0.4rem 1.1rem;
+      margin-bottom: 0.35rem;
+    }
+    .meta-label {
+      white-space: nowrap;
+      font-weight: 600;
+      color: #334155;
+    }
+    .meta-input {
+      border: none;
+      border-bottom: 1px solid #334155;
+      background: transparent;
+      font: inherit;
+      min-width: 6.5rem;
+      max-width: 22rem;
+      flex: 1 1 9rem;
+      padding: 2px 5px 1px;
+      text-align: right;
+      color: var(--ink);
+    }
+    .meta-input:focus { outline: 2px solid #94a3b8; outline-offset: 1px; }
+    .chk-inline { margin-inline-start: 0.35rem; vertical-align: middle; }
+    table.marks-sheet-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 12.5px;
+      margin-top: 12px;
+      direction: ltr;
+      border: 2px solid var(--border);
+    }
+    .marks-sheet-table th,
+    .marks-sheet-table td {
+      border: 1.5px solid var(--border);
+      padding: 5px 4px;
+      text-align: center;
+      vertical-align: middle;
+      word-wrap: break-word;
+    }
+    .marks-sheet-table th {
+      background: var(--header-fill);
+      font-weight: 700;
+      font-size: 11.5px;
+      text-transform: none;
+      letter-spacing: 0.02em;
+    }
+    .marks-sheet-table tbody tr:nth-child(even) td:not(.cell-danger) {
+      background: #f8fafc;
+    }
+    td.cell-danger { background: #fecaca !important; color: #000; font-weight: 700; }
+    .cell-num { width: 9%; }
+    .cell-fig { width: 14%; }
+    .cell-letters { width: auto; }
+    .letters-input {
+      width: 98%;
+      box-sizing: border-box;
+      border: none;
+      background: transparent;
+      font: inherit 11.5px "Times New Roman", "Traditional Arabic", serif;
+      text-align: center;
+      padding: 3px 2px;
+      min-height: 1.35em;
+    }
+    .foot {
+      margin-top: 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 2rem;
+      font-size: 15px;
+      direction: rtl;
+      flex-wrap: wrap;
+    }
+    .foot-item {
+      flex: 1 1 42%;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 12rem;
+    }
+    .foot-label { white-space: nowrap; font-weight: 600; }
+    .foot-line {
+      flex: 1;
+      border-bottom: 1px solid var(--ink);
+      min-height: 1.35em;
+      min-width: 4rem;
+    }
+    .pnum {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 15px;
+      color: #475569;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+    }
+    .page--continuation table { margin-top: 0; }
+    .page--continuation .pnum { margin-top: 10px; }
+    /* Screen-only: opens system print (hidden on paper / PDF). */
+    .no-print {
+      padding: 10px 12px;
+      text-align: center;
+      background: #e2e8f0;
+      border-bottom: 1px solid #cbd5e1;
+      direction: ltr;
+    }
+    .no-print button {
+      padding: 8px 20px;
+      font: 14px system-ui, sans-serif;
+      cursor: pointer;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+    }
+    .no-print button:hover { background: #1d4ed8; }
+    @media print {
+      @page {
+        margin: 10mm 12mm;
+        size: A4;
+      }
+      .no-print { display: none !important; }
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        background: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .page {
+        box-sizing: border-box !important;
+        width: auto !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        page-break-after: always;
+        break-inside: auto;
+      }
+      .page:last-child {
+        page-break-after: auto;
+      }
+      .head-top {
+        border-bottom-width: 1.5px !important;
+        margin-bottom: 0.35rem !important;
+        padding-bottom: 0.3rem !important;
+      }
+      .page--first .head-top {
+        font-size: 10.5px;
+        gap: 0.35rem;
+      }
+      .page--first .logo-slot {
+        width: 46px !important;
+        height: 46px !important;
+        font-size: 7px !important;
+      }
+      .page--first .logo-slot.logo-slot--image {
+        width: 54px !important;
+        height: 54px !important;
+      }
+      .title-wrap {
+        margin: 0.2rem 0 0.4rem !important;
+        padding: 0.15rem 0 0.35rem !important;
+        border-bottom: 1px solid #94a3b8 !important;
+      }
+      .page--first .title-main {
+        font-size: 16px;
+        margin: 0 0 0.08rem;
+      }
+      .page--first .sheet-title { font-size: 13px; margin: 0.08rem 0; }
+      .page--first .year-line { font-size: 11.5px; margin: 0.2rem 0 0; }
+      .page--first .meta-block {
+        font-size: 10.5px;
+        line-height: 1.45;
+        margin: 4px 0 8px !important;
+      }
+      .page--first .meta-row { gap: 0.2rem 0.55rem; margin-bottom: 0.2rem; }
+      .marks-sheet-table {
+        width: 100% !important;
+        font-size: 10px !important;
+        margin-top: 5px !important;
+        border-width: 1.5px !important;
+      }
+      .marks-sheet-table th,
+      .marks-sheet-table td {
+        padding: 3px 4px !important;
+        border-width: 1px !important;
+        vertical-align: middle !important;
+      }
+      .marks-sheet-table th {
+        font-size: 9px !important;
+        padding: 4px 3px !important;
+      }
+      .marks-sheet-table tbody tr:nth-child(even) td {
+        background: #f3f4f6 !important;
+      }
+      .letters-input { font-size: 9px !important; padding: 1px !important; }
+      .foot {
+        margin-top: 10px !important;
+        font-size: 11px !important;
+        gap: 1.25rem !important;
+      }
+      .foot-line { border-bottom-width: 1px !important; }
+      .pnum { margin-top: 8px !important; font-size: 12px !important; color: #000 !important; }
+      .meta-input, .letters-input { border-bottom-color: #000; }
+      .meta-input:focus, .letters-input:focus { outline: none; }
+      input.meta-input,
+      input.letters-input {
+        color: #000 !important;
+        background: transparent !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      td.cell-danger {
+        background: #fecaca !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .page--continuation .marks-sheet-table thead {
+        display: none !important;
+      }
+      .page--continuation .marks-sheet-table tbody tr:first-child td {
+        border-top: 2px solid var(--border);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button type="button" onclick="window.print()">Print</button>
+  </div>
+  {% for page in pages %}
+  <section class="page{% if forloop.first %} page--first{% else %} page--continuation{% endif %}">
+    {% if forloop.first %}
+    <div class="head-top">
+      <div class="fr">
+        Université Libanaise<br>
+        Faculté de Technologie<br>
+        <span>— {{ material_section.section.name }} —</span>
+      </div>
+      <div class="logo-slot{% if institution_logo_url %} logo-slot--image{% endif %}">
+        {% if institution_logo_url %}
+          <img src="{{ institution_logo_url }}" alt="" class="logo-img" referrerpolicy="no-referrer">
+        {% else %}
+          Logo
+        {% endif %}
+      </div>
+      <div class="ar">
+        الجامعة اللبنانية<br>
+        كلية التكنولوجيا<br>
+        <span>— {{ material_section.section.name }} —</span>
+      </div>
+    </div>
+
+    <div class="title-wrap">
+    <h1 class="title-main">{% if heading_main_ar %}{{ heading_main_ar }}{% else %}العلامة النهائية (متوسط المصححين) /100{% endif %}</h1>
+    <div class="sheet-title">{{ sheet_title_ar }}</div>
+    <div class="year-line">العام الجامعي : {{ academic_year.year_label }}</div>
+    </div>
+
+    <div class="meta-block">
+      <div class="meta-row">
+        <span class="meta-label">القسم :</span>
+        <input type="text" class="meta-input" value="{{ material_section.material.department.name }}" aria-label="القسم">
+        <span class="meta-label">اللغة :</span>
+        <input type="text" class="meta-input" value="{{ material_section.section.name }}" aria-label="اللغة">
+        <span class="meta-label">المادة :</span>
+        <input type="text" class="meta-input" value="{{ material_section.material.material_name }}" aria-label="المادة">
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">الفصل :</span>
+        <input type="text" class="meta-input" value="الفصل الدراسي {{ material_section.material.semester }}" aria-label="الفصل">
+        <span class="meta-label">الدورة :</span>
+        <input type="text" class="meta-input" value="{{ session_ar }}" aria-label="الدورة">
+        <span class="meta-label">إسم المصحح :</span>
+        <input type="text" class="meta-input" style="max-width:28rem;" value="{% if corrector_meta_line %}{{ corrector_meta_line }}{% else %}{% if corrector_first %}{{ corrector_first }}{% endif %}{% if corrector_second %} — {{ corrector_second }}{% endif %}{% endif %}" aria-label="إسم المصحح">
+        <label class="meta-label"><input type="checkbox" class="chk-inline" aria-label="مصحح 1"{% if corrector_checkbox_role == "first" %} checked{% endif %}> 1</label>
+        <label class="meta-label"><input type="checkbox" class="chk-inline" aria-label="مصحح 2"{% if corrector_checkbox_role == "second" %} checked{% endif %}> 2</label>
+      </div>
+    </div>
+    {% endif %}
+
+    <table class="marks-sheet-table">
+      <thead>
+        <tr>
+          <th class="cell-num">No. fictif</th>
+          <th class="cell-fig">Note en chiffres /100</th>
+          <th class="cell-letters">Note en lettres /100</th>
+          <th class="cell-num">No. fictif</th>
+          <th class="cell-fig">Note en chiffres /100</th>
+          <th class="cell-letters">Note en lettres /100</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in page %}
+        <tr>
+          <td class="{% if row.left and row.left.highlight %}cell-danger{% endif %}">{% if row.left %}{{ row.left.number }}{% endif %}</td>
+          <td class="{% if row.left and row.left.highlight %}cell-danger{% endif %}">{% if row.left %}{{ row.left.total }}{% endif %}</td>
+          <td class="{% if row.left and row.left.highlight %}cell-danger{% endif %}">{% if row.left %}<input type="text" class="letters-input" value="{{ row.left.words }}" aria-label="Note en lettres">{% endif %}</td>
+          <td class="{% if row.right and row.right.highlight %}cell-danger{% endif %}">{% if row.right %}{{ row.right.number }}{% endif %}</td>
+          <td class="{% if row.right and row.right.highlight %}cell-danger{% endif %}">{% if row.right %}{{ row.right.total }}{% endif %}</td>
+          <td class="{% if row.right and row.right.highlight %}cell-danger{% endif %}">{% if row.right %}<input type="text" class="letters-input" value="{{ row.right.words }}" aria-label="Note en lettres">{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="foot">
+      <div class="foot-item"><span class="foot-label">التاريخ :</span><span class="foot-line" aria-hidden="true"></span></div>
+      <div class="foot-item"><span class="foot-label">إمضاء :</span><span class="foot-line" aria-hidden="true"></span></div>
+    </div>
+    <div class="pnum">- {{ forloop.counter }}/{{ pages|length }} -</div>
+  </section>
+  {% endfor %}
+<script>
+(function () {
+  try {
+    if (new URLSearchParams(window.location.search).get("print") !== "1") return;
+    window.addEventListener("load", function () {
+      window.setTimeout(function () { window.print(); }, 900);
+    });
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>

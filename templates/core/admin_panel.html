@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+{% load static tz %}
+
+{% block title %}Administration{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <h1>Administration</h1>
+  <p class="muted">Manage teachers and staff administrators, assign correctors, open grading, and printable mark sheets.</p>
+  {% if msg %}
+  <p class="banner banner-success">{{ msg }}</p>
+  {% endif %}
+  <p><a class="btn small" href="{% url 'dashboard' %}">Back to dashboard</a></p>
+</section>
+
+<section class="panel">
+  <h2>Grading overview</h2>
+  <p class="muted small">One row per material and session. Marks dates appear after a corrector saves the full grid. Average date appears once both rounds are complete. Print opens the PDF-ready sheet.</p>
+  {% if grading_overview_rows %}
+  <div class="table-wrap scroll">
+    <table class="sheet">
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Year</th>
+          <th>Session</th>
+          <th>1st corrector</th>
+          <th>1st marks</th>
+          <th>2nd corrector</th>
+          <th>2nd marks</th>
+          <th>Average</th>
+          <th>Print</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in grading_overview_rows %}
+        <tr>
+          <td>{{ row.label }}</td>
+          <td>{{ row.year_label }}</td>
+          <td>{{ row.session_label }}</td>
+          <td>{{ row.first_doctor }}</td>
+          <td>
+            {% if row.first_ready %}
+            <span class="status-done">
+              <span class="status-done-label">Done</span>
+              {% if row.first_marks_date %}<span class="status-done-date">{{ row.first_marks_date|localtime|date:"M j, Y, g:i a" }}</span>{% endif %}
+            </span>
+            {% else %}<span class="muted">—</span>{% endif %}
+          </td>
+          <td>{{ row.second_doctor }}</td>
+          <td>
+            {% if row.second_ready %}
+            <span class="status-done">
+              <span class="status-done-label">Done</span>
+              {% if row.second_marks_date %}<span class="status-done-date">{{ row.second_marks_date|localtime|date:"M j, Y, g:i a" }}</span>{% endif %}
+            </span>
+            {% else %}<span class="muted">—</span>{% endif %}
+          </td>
+          <td>
+            {% if row.average_ready %}
+            <span class="status-done">
+              <span class="status-done-label">Done</span>
+              {% if row.average_date %}<span class="status-done-date">{{ row.average_date|localtime|date:"M j, Y, g:i a" }}</span>{% endif %}
+            </span>
+            {% else %}<span class="muted">—</span>{% endif %}
+          </td>
+          <td class="actions" style="flex-wrap:wrap;gap:0.25rem;">
+            {% if row.print_first %}
+            <a class="btn small" href="{% url 'printable_final_marks' row.ms_id row.year_id row.session_type 'first' %}" target="_blank" rel="noopener">Print 1st</a>
+            {% endif %}
+            {% if row.print_second %}
+            <a class="btn small" href="{% url 'printable_final_marks' row.ms_id row.year_id row.session_type 'second' %}" target="_blank" rel="noopener">Print 2nd</a>
+            {% endif %}
+            {% if row.print_average %}
+            <a class="btn small primary" href="{% url 'printable_final_averages' row.ms_id row.year_id row.session_type %}" target="_blank" rel="noopener">Print average</a>
+            {% endif %}
+            {% if not row.print_first and not row.print_second and not row.print_average %}<span class="muted">—</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="muted">No material/year assignments yet.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Printable reports by material</h2>
+  <p class="muted small">Print appears once correctors have entered marks (full grid or finalized round). Averages print only after the second round is complete. Use <span class="muted">—</span> when not ready yet.</p>
+  {% if printable_report_rows %}
+  <div class="table-wrap scroll">
+    <table class="sheet">
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Year</th>
+          <th>Session</th>
+          <th>1st /100</th>
+          <th>2nd /100</th>
+          <th>Averages</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in printable_report_rows %}
+        <tr>
+          <td>{{ row.label }}</td>
+          <td>{{ row.year_label }}</td>
+          <td>{{ row.session_label }}</td>
+          <td>
+            {% if row.print_first %}
+            <a class="btn small" href="{% url 'printable_final_marks' row.ms_id row.year_id row.session_type 'first' %}" target="_blank" rel="noopener">Print</a>
+            {% else %}<span class="muted">—</span>{% endif %}
+          </td>
+          <td>
+            {% if row.print_second %}
+            <a class="btn small" href="{% url 'printable_final_marks' row.ms_id row.year_id row.session_type 'second' %}" target="_blank" rel="noopener">Print</a>
+            {% else %}<span class="muted">—</span>{% endif %}
+          </td>
+          <td>
+            {% if row.print_averages %}
+            <a class="btn small" href="{% url 'printable_final_averages' row.ms_id row.year_id row.session_type %}" target="_blank" rel="noopener">Print</a>
+            {% else %}<span class="muted">—</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="muted">No material/year assignments yet. Add correctors below to define contexts.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Printable reports — TP (practical)</h2>
+  <p class="muted small">TP courses use a single corrector (first assigned). Print appears once that corrector has entered marks.</p>
+  {% if printable_tp_report_rows %}
+  <div class="table-wrap scroll">
+    <table class="sheet">
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Year</th>
+          <th>/100</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in printable_tp_report_rows %}
+        <tr>
+          <td>{{ row.label }}</td>
+          <td>{{ row.year_label }}</td>
+          <td>
+            {% if row.print_marks %}
+            <a class="btn small" href="{% url 'printable_final_marks' row.ms_id row.year_id row.session_type 'first' %}" target="_blank" rel="noopener">Print</a>
+            {% else %}<span class="muted">—</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="muted">No TP material/year assignments yet.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Users</h2>
+
+  <h3>Add teacher or administrator</h3>
+  <form method="post" class="stack">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="add_user">
+    <label>Username
+      <input type="text" name="username" required autocomplete="username">
+    </label>
+    <label>Email
+      <input type="email" name="email" required autocomplete="email">
+    </label>
+    <label>Phone number (for WhatsApp)
+      <input type="text" name="phone_number" autocomplete="tel" placeholder="+961...">
+    </label>
+    <label>Password
+      <input type="password" name="password" required autocomplete="new-password">
+    </label>
+    <label class="check">
+      <input type="checkbox" name="grant_staff" value="1">
+      Administrator (can open this panel and manage users; does not use Django’s /admin/ site)
+    </label>
+    <button type="submit" class="btn primary">Create account</button>
+  </form>
+
+  <hr class="panel-hr">
+
+  <h3>Teachers</h3>
+  <p class="muted small">Save each teacher’s <strong>WhatsApp number</strong> (with country code, e.g. +961…) so notifications and handoff links work.</p>
+  <ul class="material-list">
+    {% for u in teachers %}
+    <li style="flex-wrap: wrap; gap: 0.5rem;">
+      <span>{{ u.username }} <span class="muted small">({{ u.email }})</span></span>
+      <form method="post" style="margin:0;display:flex;align-items:center;flex-wrap:wrap;gap:0.35rem;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update_teacher_phone">
+        <input type="hidden" name="user_id" value="{{ u.id }}">
+        <label class="muted small" style="margin:0;display:inline-flex;align-items:center;gap:0.25rem;">
+          WhatsApp
+          <input type="text" name="phone_number" value="{{ u.phone_number }}" placeholder="+961…" autocomplete="tel" style="min-width:11rem;padding:0.2rem 0.4rem;">
+        </label>
+        <button type="submit" class="btn small">Save</button>
+      </form>
+      <span class="actions">
+        <form method="post" style="margin:0;" onsubmit="return confirm('Remove this user?');">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete_user">
+          <input type="hidden" name="user_id" value="{{ u.id }}">
+          <button type="submit" class="btn small">Remove</button>
+        </form>
+      </span>
+    </li>
+    {% empty %}
+    <li class="muted">No teacher accounts.</li>
+    {% endfor %}
+  </ul>
+
+  <h3>Administrators (staff)</h3>
+  <p class="muted small">Same privileges as you on this panel (not Django superusers).</p>
+  <ul class="material-list">
+    {% for u in panel_staff_users %}
+    <li>
+      <span>{{ u.username }} <span class="muted small">({{ u.email }}) {% if u.phone_number %}<span class="muted small">— {{ u.phone_number }}</span>{% endif %}</span></span>
+      <span class="actions">
+        {% if u.id != user.id %}
+        <form method="post" style="margin:0;" onsubmit="return confirm('Remove this administrator?');">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete_user">
+          <input type="hidden" name="user_id" value="{{ u.id }}">
+          <button type="submit" class="btn small">Remove</button>
+        </form>
+        {% else %}
+        <span class="muted small">You</span>
+        {% endif %}
+      </span>
+    </li>
+    {% empty %}
+    <li class="muted">No other staff accounts.</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="panel">
+  <h2>Assign first / second corrector</h2>
+  <p class="muted small">Teachers only (not staff administrators) can be assigned as correctors.</p>
+  <form method="post" class="stack">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="set_corrector">
+    <label>Material &amp; section
+      <select name="material_section_id" required>
+        <option value="">—</option>
+        {% for ms in material_sections %}
+        <option value="{{ ms.id }}">
+          {{ ms.material.material_name }} — {{ ms.section.name }}
+          ({{ ms.material.department.name }}, Y{{ ms.material.level }}, S{{ ms.material.semester }})
+        </option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Academic year
+      <select name="academic_year_id" required>
+        <option value="">—</option>
+        {% for y in academic_years %}
+        <option value="{{ y.id }}">{{ y.year_label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Role
+      <select name="role" required>
+        <option value="">—</option>
+        <option value="first">First corrector</option>
+        <option value="second">Second corrector</option>
+      </select>
+    </label>
+    <label>Teacher (optional)
+      <select name="doctor_id">
+        <option value="">— None —</option>
+        {% for d in corrector_doctors %}
+        <option value="{{ d.id }}">{{ d.username }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit" class="btn primary">Save assignment</button>
+  </form>
+
+  <h3 style="margin-top:1.25rem;">Current slots</h3>
+  <div class="table-wrap scroll">
+    <table class="sheet">
+      <thead>
+        <tr>
+          <th>Year</th>
+          <th>Material</th>
+          <th>Section</th>
+          <th>Role</th>
+          <th>Teacher</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in corrector_assignments %}
+        <tr>
+          <td>{{ a.academic_year.year_label }}</td>
+          <td>{{ a.material_section.material.material_name }}</td>
+          <td>{{ a.material_section.section.name }}</td>
+          <td>{{ a.get_role_display }}</td>
+          <td>{% if a.corrector %}{{ a.corrector.username }}{% if a.corrector.phone_number %}<span class="muted small"> ({{ a.corrector.phone_number }})</span>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
+          <td>
+            {% if a.corrector %}
+            <form method="post" style="margin:0;display:inline;" onsubmit="return confirm('Clear this slot?');">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="clear_corrector">
+              <input type="hidden" name="assignment_id" value="{{ a.id }}">
+              <button type="submit" class="btn small ghost">Clear</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="muted">No assignment rows yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Open grading (any material)</h2>
+  <p class="muted small">You can edit rubrics and marks for any course from here.</p>
+  <div class="stack" style="max-width:36rem;">
+    <label>Material &amp; section
+      <select id="staff-ms">
+        <option value="">—</option>
+        {% for ms in material_sections %}
+        <option value="{{ ms.id }}">{{ ms.material.material_name }} — {{ ms.section.name }} (Y{{ ms.material.level }})</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Academic year
+      <select id="staff-year">
+        {% for y in academic_years %}
+        <option value="{{ y.id }}">{{ y.year_label }}</option>
+        {% empty %}
+        <option value="">No years</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Session
+      <select id="staff-session">
+        <option value="partial">Partial</option>
+        <option value="first_final">First final</option>
+        <option value="second_final">Second final</option>
+      </select>
+    </label>
+    <label>Corrector role
+      <select id="staff-role">
+        <option value="first">First corrector</option>
+        <option value="second">Second corrector</option>
+      </select>
+    </label>
+    <button type="button" class="btn primary" id="staff-open-grading">Open grading</button>
+    <button type="button" class="btn" id="staff-open-final">Final results</button>
+  </div>
+</section>
+
+<script>
+  (function () {
+    function go(path) {
+      const ms = document.getElementById("staff-ms").value;
+      const year = document.getElementById("staff-year").value;
+      if (!ms || !year) {
+        alert("Select material and academic year.");
+        return;
+      }
+      window.location.href = path
+        .replace("__MS__", ms)
+        .replace("__Y__", year);
+    }
+    document.getElementById("staff-open-grading").addEventListener("click", function () {
+      const st = document.getElementById("staff-session").value;
+      const role = document.getElementById("staff-role").value;
+      go("/grading/__MS__/__Y__/" + st + "/" + role + "/");
+    });
+    document.getElementById("staff-open-final").addEventListener("click", function () {
+      const st = document.getElementById("staff-session").value;
+      go("/final/__MS__/__Y__/" + st + "/");
+    });
+  })();
+</script>
+{% endblock %}

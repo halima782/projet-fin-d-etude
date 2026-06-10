@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>University Admin Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <style>
+        body { display: block; padding: 40px; background: #f4f7f6; }
+        .dashboard-container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .header { border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+        .btn-logout { color: #b21f1f; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h2>University Admin Portal</h2>
+            <a href="/login/" class="btn-logout">Logout</a>
+        </div>
+        <p>Welcome back, <strong>{{ user.username }}</strong>!</p>
+        <hr>
+        <div class="stats-grid" style="display: flex; gap: 20px; margin-top: 20px;">
+            <div style="flex: 1; padding: 20px; background: #003366; color: white; border-radius: 10px;">
+                <h3>Manage Doctors</h3>
+                <p>Add or remove university staff.</p>
+            </div>
+            <div style="flex: 1; padding: 20px; background: #fdbb2d; color: #333; border-radius: 10px;">
+                <h3>View Grades</h3>
+                <p>Monitor examination results.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Final results — {{ material_name }}{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Final results</h1>
+  <p class="muted">{{ material_name }} — {{ academic_year.year_label }} — {{ session_label }} exam</p>
+  {% if downloads_available %}
+  <p class="row-actions" style="margin-top:0.75rem;flex-wrap:wrap;gap:0.35rem;">
+    {% if simple_final_print_only %}
+    <a class="btn small primary" href="{% url 'printable_final_averages' material_section.id academic_year.id session_type %}" target="_blank" rel="noopener">Print out average</a>
+    {% else %}
+    {% for role in assigned_roles %}
+    <a class="btn small primary" href="{% url 'preview_grading_export' material_section.id academic_year.id session_type role 'my_marks' %}" target="_blank" rel="noopener">My final marks /100 ({{ role }})</a>
+    <a class="btn small" href="{% url 'printable_final_marks' material_section.id academic_year.id session_type role %}" target="_blank" rel="noopener">Print /100 ({{ role }})</a>
+    {% endfor %}
+    <a class="btn small" href="{% url 'preview_grading_export' material_section.id academic_year.id session_type assigned_roles.0 'averages' %}" target="_blank" rel="noopener">Averages between correctors</a>
+    <a class="btn small" href="{% url 'printable_final_averages' material_section.id academic_year.id session_type %}" target="_blank" rel="noopener">Print averages</a>
+    {% endif %}
+  </p>
+  {% endif %}
+  {% if staff_mode %}
+  <p class="muted small">Administrator view: exports and print links are available even if the second round is not finished yet.</p>
+  {% endif %}
+  <p class="muted small">Rows with a difference greater than 10 points between correctors are highlighted.</p>
+  <div class="table-wrap scroll">
+    <table class="sheet">
+      <thead>
+        <tr>
+          <th>Exam #</th>
+          <th>First /100</th>
+          <th>Second /100</th>
+          <th>Average</th>
+          <th>Difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr class="{% if r.pending %}muted{% endif %} {% if r.highlight %}row-warn{% endif %}">
+          <td>{{ r.exam_number }}</td>
+          {% if r.pending %}
+          <td colspan="4">Pending second round</td>
+          {% else %}
+          <td>{{ r.first_total }}</td>
+          <td>{{ r.second_total }}</td>
+          <td>{{ r.average }}</td>
+          <td>{{ r.difference }}</td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

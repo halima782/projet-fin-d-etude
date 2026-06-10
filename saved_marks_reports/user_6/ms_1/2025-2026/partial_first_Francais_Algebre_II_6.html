@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Printable — Final marks /100</title>
+  <style>
+    body { font-family: "Times New Roman", Times, serif; margin: 0; background: #f0f0f0; color: #111; }
+    .page {
+      width: 210mm; min-height: 297mm; margin: 10mm auto; background: #fff;
+      padding: 10mm 12mm; box-sizing: border-box; border: 1px solid #ccc;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+    .head-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 0.5rem; font-size: 14px; margin-bottom: 0.5rem;
+    }
+    .head-top .fr { text-align: left; direction: ltr; flex: 1; line-height: 1.35; }
+    .head-top .logo-slot {
+      width: 72px; height: 72px; flex-shrink: 0; border: 1px dashed #999;
+      display: flex; align-items: center; justify-content: center; font-size: 10px; color: #666;
+      overflow: hidden;
+    }
+    .head-top .logo-slot.logo-slot--image {
+      border: none;
+      padding: 2px;
+    }
+    .head-top .logo-slot .logo-img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
+    .head-top .ar { text-align: right; flex: 1; line-height: 1.35; }
+    .title-main {
+      text-align: center; font-size: 26px; font-weight: 700; margin: 0.35rem 0 0.25rem;
+    }
+    .sheet-title {
+      text-align: center; font-size: 22px; font-weight: 700; margin: 0.25rem 0;
+    }
+    .year-line { text-align: center; font-size: 18px; margin-bottom: 0.75rem; }
+    .meta-block { direction: rtl; text-align: right; margin: 6px 0; font-size: 15px; line-height: 2; }
+    .meta-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.35rem 1rem; }
+    .meta-label { white-space: nowrap; }
+    .meta-input {
+      border: none; border-bottom: 1px dotted #000; background: transparent;
+      font: inherit; min-width: 7rem; max-width: 22rem; flex: 1 1 10rem;
+      padding: 1px 4px; text-align: right;
+    }
+    .meta-input:focus { outline: 1px solid #333; outline-offset: 1px; }
+    .chk-inline { margin-inline-start: 0.35rem; vertical-align: middle; }
+    table {
+      width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; margin-top: 10px;
+      direction: ltr;
+    }
+    th, td { border: 2px solid #222; padding: 4px 3px; text-align: center; }
+    th { background: #e8e8e8; font-weight: 700; }
+    td.cell-danger { background: #ffcdd2; color: #000; font-weight: 700; }
+    .cell-num { width: 8%; }
+    .cell-fig { width: 14%; }
+    .letters-input {
+      width: 95%; border: none; background: transparent; font: inherit 12px "Times New Roman", serif;
+      text-align: center; padding: 2px;
+    }
+    .foot { margin-top: 20px; display: flex; justify-content: space-between; font-size: 16px; direction: rtl; }
+    .pnum { text-align: center; margin-top: 14px; font-size: 22px; }
+    .page--continuation table { margin-top: 0; }
+    /* Screen-only: opens system print (hidden on paper / PDF). */
+    .no-print {
+      padding: 10px 12px;
+      text-align: center;
+      background: #e2e8f0;
+      border-bottom: 1px solid #cbd5e1;
+      direction: ltr;
+    }
+    .no-print button {
+      padding: 8px 20px;
+      font: 14px system-ui, sans-serif;
+      cursor: pointer;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+    }
+    .no-print button:hover { background: #1d4ed8; }
+    @media print {
+      @page {
+        margin: 12mm;
+      }
+      .no-print { display: none !important; }
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        background: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      /* Stable print: no flex/min-height tricks (they split one sheet across 3–4 PDF pages in Edge). */
+      .page {
+        box-sizing: border-box !important;
+        width: auto !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        page-break-after: always;
+        break-inside: auto;
+      }
+      .page:last-child {
+        page-break-after: auto;
+      }
+      .page--first .head-top {
+        font-size: 11px;
+        margin-bottom: 0.25rem;
+        gap: 0.25rem;
+      }
+      .page--first .logo-slot {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 7px !important;
+      }
+      .page--first .logo-slot.logo-slot--image {
+        width: 52px !important;
+        height: 52px !important;
+      }
+      .page--first .title-main {
+        font-size: 17px;
+        margin: 0.15rem 0 0.1rem;
+      }
+      .page--first .sheet-title { font-size: 14px; margin: 0.1rem 0; }
+      .page--first .year-line { font-size: 12px; margin-bottom: 0.35rem; }
+      .page--first .meta-block {
+        font-size: 11px;
+        line-height: 1.35;
+        margin: 2px 0;
+      }
+      .page--first .meta-row { gap: 0.2rem 0.5rem; }
+      .marks-sheet-table {
+        width: 100% !important;
+        font-size: 10px !important;
+        margin-top: 4px !important;
+      }
+      .marks-sheet-table th,
+      .marks-sheet-table td {
+        padding: 2px 3px !important;
+        border-width: 1px !important;
+        vertical-align: middle !important;
+      }
+      .letters-input { font-size: 9px !important; padding: 0 !important; }
+      .foot { margin-top: 8px !important; font-size: 11px !important; }
+      .pnum { margin-top: 6px !important; font-size: 14px !important; }
+      .meta-input, .letters-input { border-bottom-color: #333; }
+      .meta-input:focus, .letters-input:focus { outline: none; }
+      input.meta-input,
+      input.letters-input {
+        color: #000 !important;
+        background: transparent !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      td.cell-danger {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      /* Second sheet: no repeated column-header row on paper (screen preview unchanged). */
+      .page--continuation .marks-sheet-table thead {
+        display: none !important;
+      }
+      .page--continuation .marks-sheet-table tbody tr:first-child td {
+        border-top: 2px solid #222;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button type="button" onclick="window.print()">Print</button>
+  </div>
+  
+  <section class="page page--first">
+    
+    <div class="head-top">
+      <div class="fr">
+        Université Libanaise<br>
+        Faculté de Technologie<br>
+        <span>— Francais —</span>
+      </div>
+      <div class="logo-slot logo-slot--image">
+        
+          <img src="data:image/png;base64,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" alt="" class="logo-img" referrerpolicy="no-referrer">
+        
+      </div>
+      <div class="ar">
+        الجامعة اللبنانية<br>
+        كلية التكنولوجيا<br>
+        <span>— Francais —</span>
+      </div>
+    </div>
+
+    <h1 class="title-main">علامات المصحّح / 100</h1>
+    <div class="sheet-title">علامات الامتحانات الخطية الجزئية</div>
+    <div class="year-line">العام الجامعي : 2025-2026</div>
+
+    <div class="meta-block">
+      <div class="meta-row">
+        <span class="meta-label">القسم :</span>
+        <input type="text" class="meta-input" value="GRIT" aria-label="القسم">
+        <span class="meta-label">اللغة :</span>
+        <input type="text" class="meta-input" value="Francais" aria-label="اللغة">
+        <span class="meta-label">المادة :</span>
+        <input type="text" class="meta-input" value="Algebre II" aria-label="المادة">
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">الفصل :</span>
+        <input type="text" class="meta-input" value="الفصل الدراسي 2" aria-label="الفصل">
+        <span class="meta-label">الدورة :</span>
+        <input type="text" class="meta-input" value="جزئية" aria-label="الدورة">
+        <span class="meta-label">إسم المصحح :</span>
+        <input type="text" class="meta-input" style="max-width:28rem;" value="Jad-Jamal-Abou-Alfeh" aria-label="إسم المصحح">
+        <label class="meta-label"><input type="checkbox" class="chk-inline" aria-label="مصحح 1" checked> 1</label>
+        <label class="meta-label"><input type="checkbox" class="chk-inline" aria-label="مصحح 2"> 2</label>
+      </div>
+    </div>
+    
+
+    <table class="marks-sheet-table">
+      <thead>
+        <tr>
+          <th class="cell-num">No. fictif</th>
+          <th class="cell-fig">Note en chiffres /100</th>
+          <th>Note en lettres /100</th>
+          <th class="cell-num">No. fictif</th>
+          <th class="cell-fig">Note en chiffres /100</th>
+          <th>Note en lettres /100</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td class="">1</td>
+          <td class="">46.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">19</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">2</td>
+          <td class="">52.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">20</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">3</td>
+          <td class="">79.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">21</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">4</td>
+          <td class="">22.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">22</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">5</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">23</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">6</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">24</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">7</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">25</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">8</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">26</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">9</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">27</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">10</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">28</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">11</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">29</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">12</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">30</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">13</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">31</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">14</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">32</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">15</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">33</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">16</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">34</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">17</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">35</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">18</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">36</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+      </tbody>
+    </table>
+
+    <div class="foot">
+      <div>التاريخ :</div>
+      <div>إمضاء :</div>
+    </div>
+    <div class="pnum">- 1/2 -</div>
+  </section>
+  
+  <section class="page page--continuation">
+    
+
+    <table class="marks-sheet-table">
+      <thead>
+        <tr>
+          <th class="cell-num">No. fictif</th>
+          <th class="cell-fig">Note en chiffres /100</th>
+          <th>Note en lettres /100</th>
+          <th class="cell-num">No. fictif</th>
+          <th class="cell-fig">Note en chiffres /100</th>
+          <th>Note en lettres /100</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td class="">37</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">59</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">38</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">60</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">39</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">61</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">40</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">62</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">41</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">63</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">42</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">64</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">43</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">65</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">44</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">66</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">45</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">67</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">46</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">68</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">47</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">69</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">48</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">70</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">49</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">71</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">50</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">72</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">51</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">73</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">52</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">74</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">53</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">75</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">54</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">76</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">55</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">77</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">56</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">78</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">57</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">79</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+        <tr>
+          <td class="">58</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+          <td class="">80</td>
+          <td class="">0.00</td>
+          <td class=""><input type="text" class="letters-input" value="" aria-label="Note en lettres"></td>
+        </tr>
+        
+      </tbody>
+    </table>
+
+    <div class="foot">
+      <div>التاريخ :</div>
+      <div>إمضاء :</div>
+    </div>
+    <div class="pnum">- 2/2 -</div>
+  </section>
+  
+<script>
+(function () {
+  try {
+    if (new URLSearchParams(window.location.search).get("print") !== "1") return;
+    window.addEventListener("load", function () {
+      window.setTimeout(function () { window.print(); }, 900);
+    });
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>

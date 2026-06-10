@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Corrector Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Ensures disabled links truly cannot be clicked */
+        .disabled-link {
+            pointer-events: none;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .card-material {
+            transition: transform 0.2s;
+        }
+        .card-material:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-primary shadow-sm mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">University Grading Portal</span>
+            <div class="text-white d-flex align-items-center">
+                {% if user.is_authenticated %}
+                    <span class="me-3">Dr. {{ user.username }}</span>
+                    <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-light text-primary">Logout</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="card shadow-sm border-0 p-4 mb-5">
+            <h4 class="mb-4 text-secondary">Search Assigned Exams</h4>
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small">{{ form.department.label }}</label>
+                    {{ form.department }}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small">{{ form.section.label }}</label>
+                    {{ form.section }}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small">{{ form.level.label }}</label>
+                    {{ form.level }}
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Display Materials</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="mt-4">
+            <h3 class="h5 text-uppercase fw-bold text-muted mb-3">Available Modules</h3>
+            <hr>
+            <div class="row">
+                {% if materials_data %}
+                    {% for data in materials_data %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm border-0 card-material">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary fw-bold">{{ data.item.material.material_name }}</h5>
+                                <div class="card-text mb-4">
+                                    <div class="d-flex justify-content-between border-bottom py-1">
+                                        <span class="text-muted">Section:</span>
+                                        <span>{{ data.item.section.name }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between border-bottom py-1">
+                                        <span class="text-muted">Level:</span>
+                                        <span>Year {{ data.item.material.level }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between py-1">
+                                        <span class="text-muted small">Assigned As:</span>
+                                        <span class="badge bg-info text-dark">
+                                            {% if data.role %}{{ data.role|title }}{% else %}Not Assigned{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <button type="button" class="btn btn-success w-100 mb-2" data-bs-toggle="modal" data-bs-target="#roleModal{{ data.item.id }}">
+                                    Open Grading Sheet
+                                </button>
+
+                                <div class="text-center">
+                                    <a href="{% url 'show_report' data.item.id %}" class="small text-decoration-none">View Confrontation Report</a>
+                                </div>
+
+                                <div class="modal fade" id="roleModal{{ data.item.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header border-0">
+                                                <h5 class="modal-title fw-bold">Select Correction Phase</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body text-center p-4">
+                                                <p class="text-muted">Access is restricted to your assigned role for this academic module.</p>
+                                                <div class="d-grid gap-3">
+                                                    
+                                                    <a href="{% url 'grading_sheet' data.item.id 'first' %}" 
+                                                       class="btn btn-lg {% if data.role == 'first' %}btn-primary{% else %}btn-outline-secondary disabled-link{% endif %}">
+                                                        First Corrector
+                                                    </a>
+
+                                                    <a href="{% url 'grading_sheet' data.item.id 'second' %}" 
+                                                       class="btn btn-lg {% if data.role == 'second' %}btn-primary{% else %}btn-outline-secondary disabled-link{% endif %}">
+                                                        Second Corrector
+                                                    </a>
+
+                                                </div>
+                                                {% if not data.role %}
+                                                <div class="alert alert-danger mt-4 small py-2">
+                                                    <strong>Access Denied:</strong> You are not registered as a corrector for this material.
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12 text-center py-5">
+                        <div class="alert alert-light border shadow-sm">
+                            <p class="mb-0 text-muted">Please select your criteria and click <strong>Display Materials</strong> to view your modules.</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Optional: Ensure form controls have Bootstrap classes applied
+        document.querySelectorAll('select').forEach(el => el.classList.add('form-select'));
+    </script>
+</body>
+</html>

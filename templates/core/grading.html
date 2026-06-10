@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Grading — {{ material_name }}{% endblock %}
+{% block content %}
+<div id="grading-root"
+     data-ms-id="{{ material_section.id }}"
+     data-year-id="{{ academic_year.id }}"
+     data-role="{{ role }}"
+     data-session-type="{{ session_type }}"
+     data-staff-mode="{% if staff_mode %}1{% else %}0{% endif %}"
+     data-final-url="{% url 'final_results' material_section.id academic_year.id session_type %}"
+     data-report-url="/report/{{ material_section.id }}/{{ academic_year.id }}/{{ session_type }}/{{ role }}/">
+  <section class="panel">
+    <h1>{{ material_name }}</h1>
+    <p class="muted">{{ academic_year.year_label }} — {{ session_label }} exam — {{ role_label }}</p>
+    <p id="wait-banner" class="banner hidden">Waiting for the first corrector to finalize the rubric and first round.</p>
+  </section>
+
+  <section class="panel" id="rubric-section">
+    <h2>1. Rubric (questions &amp; parts)</h2>
+    <p class="muted small">Define each part and its maximum mark for this session (partial, first final, or second final). Each session has its own rubric; totals scale to /100.</p>
+    <div class="table-wrap">
+      <table class="sheet" id="rubric-table">
+        <thead>
+          <tr><th>Question</th><th>Part</th><th>Max mark</th><th></th></tr>
+        </thead>
+        <tbody id="rubric-body"></tbody>
+      </table>
+    </div>
+    <div class="row-actions">
+      <button type="button" class="btn ghost" id="btn-add-part">Add part</button>
+      <button type="button" class="btn primary" id="btn-save-rubric">Save rubric</button>
+    </div>
+  </section>
+
+  <section class="panel" id="marks-section">
+    <h2>2. Marks grid</h2>
+    <p class="muted small">One row per student number. Enter marks by part; Note/100 is calculated automatically.</p>
+    {% if role == "second" %}
+    <p class="muted small">When all marks are saved, the second round closes automatically, exports are generated, and the <strong>final average /100</strong> printable appears on your dashboard (and on the first corrector’s dashboard).</p>
+    {% endif %}
+    <div class="table-wrap scroll">
+      <table class="sheet" id="marks-table">
+        <thead id="marks-head"></thead>
+        <tbody id="marks-body"></tbody>
+      </table>
+    </div>
+    <div class="row-actions">
+      <button type="button" class="btn primary" id="btn-save-marks">Save marks</button>
+      <button type="button" class="btn" id="btn-show-totals">Show totals /100</button>
+      <a class="btn hidden" id="btn-open-report" href="#" target="_blank">Open printable report</a>
+    </div>
+    <div id="first-send-panel" class="banner hidden" style="margin-top:1rem;">
+      <p id="first-send-text" class="small" style="margin:0 0 0.5rem;"></p>
+      <button type="button" class="btn primary hidden" id="btn-send-handoff">Send</button>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="totals-section">
+    <h2>3. Totals on /100</h2>
+    <div class="table-wrap scroll">
+      <table class="sheet" id="totals-table">
+        <thead><tr><th>Exam #</th><th>Total /100</th></tr></thead>
+        <tbody id="totals-body"></tbody>
+      </table>
+    </div>
+    <div class="row-actions">
+      <a class="btn hidden" id="link-final" href="#">View final results</a>
+    </div>
+    <p id="export-msg" class="muted small"></p>
+  </section>
+</div>
+<script src="{% static 'js/grading.js' %}"></script>
+{% endblock %}

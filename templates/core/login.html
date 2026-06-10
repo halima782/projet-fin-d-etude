@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login — Exam Grading</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="auth-body">
+  <div class="auth-card">
+    <h1>Exam grading</h1>
+    <p class="muted">Sign in to continue</p>
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+    <form method="post" action="{% url 'login' %}" class="stack">
+      {% csrf_token %}
+      <label>Username
+        <input type="text" name="username" required autocomplete="username">
+      </label>
+      <label>Password
+        <input type="password" name="password" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="btn primary">Log in</button>
+    </form>
+  </div>
+</body>
+</html>

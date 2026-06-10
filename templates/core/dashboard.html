@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% load tz %}
+{% block title %}Dashboard — Exam Grading{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Choose exam context</h1>
+  <p class="muted">Select departments, section, level, semester, session (partial, first final, or second final), and academic year, then load materials.</p>
+
+  <div class="grid-2">
+    <div>
+      <h3>Departments</h3>
+      <div class="dept-grid" id="dept-grid">
+        {% for d in departments %}
+        <label class="check"><input type="checkbox" name="dept" value="{{ d.id }}"> {{ d.name }}</label>
+        {% empty %}
+        <p class="muted">No departments yet — add them in the admin.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="stack">
+      <label>Section
+        <select id="section">
+          <option value="">—</option>
+          <option value="Francais">Francais</option>
+          <option value="English">English</option>
+        </select>
+      </label>
+      <label>Level
+        <select id="level">
+          <option value="">—</option>
+          <option value="1">First year</option>
+          <option value="2">Second year</option>
+          <option value="3">Third year</option>
+        </select>
+      </label>
+      <label>Semester
+        <select id="semester">
+          <option value="">—</option>
+        </select>
+      </label>
+      <label>Academic year
+        <select id="year">
+          {% for y in academic_years %}
+          <option value="{{ y.id }}">{{ y.year_label }}</option>
+          {% empty %}
+          <option value="">No years — create in admin</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Session
+        <select id="exam-type">
+          <option value="partial">Partial (cours)</option>
+          <option value="tp">TP (travaux pratiques)</option>
+          <option value="first_final">First final</option>
+          <option value="second_final">Second final</option>
+        </select>
+      </label>
+      <button type="button" class="btn primary" id="btn-load-materials">Show materials</button>
+      {% if user.is_superuser or user.panel_manager %}
+      <p class="muted small" style="margin-top:0.75rem;">System management: <a href="{% url 'admin_panel' %}">Administration</a>.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div id="materials-box" class="hidden panel inner">
+    <h3>Materials</h3>
+    <ul id="material-list" class="material-list"></ul>
+  </div>
+</section>
+
+{% if ready_exports %}
+<section class="panel">
+  <h2>Final Excel files</h2>
+  <p class="muted small">After the second corrector finishes, open your final marks /100 and averages; printable sheets are linked from there.</p>
+  <ul class="material-list">
+    {% for row in ready_exports %}
+    <li>
+      <span>
+        {{ row.label }}<br>
+        <span class="muted small">{{ row.year_label }} — {{ row.session_label }} — {{ row.role_label }}</span>
+      </span>
+      <span class="actions" style="flex-wrap:wrap;gap:0.35rem;">
+        {% if row.my_marks_ready %}
+        <a class="btn small primary" href="{% url 'preview_grading_export' row.ms_id row.year_id row.session_type row.role 'my_marks' %}" target="_blank" rel="noopener">My final marks /100</a>
+        {% endif %}
+        {% if row.averages_ready %}
+        <a class="btn small" href="{% url 'preview_grading_export' row.ms_id row.year_id row.session_type row.role 'averages' %}" target="_blank" rel="noopener">Averages between correctors</a>
+        {% endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if saved_reports %}
+<section class="panel">
+  <h2>My saved printable marks sheets</h2>
+  <p class="muted small">Your own marks sheets are saved when you save marks. After the second corrector finishes the round, the <strong>final average /100</strong> sheet appears here too. <strong>Print out</strong> opens the sheet and the print dialog—choose <strong>Save as PDF</strong> (or your printer).</p>
+  <ul class="material-list">
+    {% for row in saved_reports %}
+    <li>
+      <span>
+        {{ row.label }}<br>
+        <span class="muted small">{{ row.year_label }} — {{ row.session_label }} — {{ row.role_label }} — {{ row.created_at|localtime|date:"M j, Y, g:i a" }}</span>
+      </span>
+      <span class="actions">
+        <a class="btn small primary" href="{{ row.url }}" target="_blank" rel="noopener">Print out</a>
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section class="panel">
+  <div class="row-between">
+    <h2>Notifications {% if unread_count %}<span class="badge">{{ unread_count }}</span>{% endif %}</h2>
+    {% if unread_count %}
+    <button type="button" class="btn ghost" id="btn-mark-read">Mark all read</button>
+    {% endif %}
+  </div>
+  <ul class="notif-list">
+    {% for n in notifications %}
+    <li class="{% if not n.is_read %}unread{% endif %}">{{ n.message }} <span class="muted small">{{ n.created_at|localtime|date:"M j, Y, g:i a" }}</span></li>
+    {% empty %}
+    <li class="muted">No notifications yet.</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<script>
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+  const csrftoken = getCookie('csrftoken');
+  const semesterByLevel = {
+    '1': ['1', '2'],
+    '2': ['3', '4'],
+    '3': ['5', '6'],
+    '4': ['7', '8'],
+  };
+  const levelSelect = document.getElementById('level');
+  const semesterSelect = document.getElementById('semester');
+
+  function refreshSemesterOptions() {
+    const level = levelSelect.value;
+    const semesters = semesterByLevel[level] || [];
+    semesterSelect.innerHTML = '<option value="">—</option>';
+    semesters.forEach((s) => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = `Semester ${s}`;
+      semesterSelect.appendChild(opt);
+    });
+  }
+
+  levelSelect.addEventListener('change', refreshSemesterOptions);
+  refreshSemesterOptions();
+
+  document.getElementById('btn-load-materials').addEventListener('click', async () => {
+    const deptIds = [...document.querySelectorAll('#dept-grid input:checked')].map((x) => parseInt(x.value, 10));
+    const section = document.getElementById('section').value;
+    const level = document.getElementById('level').value;
+    const semester = document.getElementById('semester').value;
+    const year = document.getElementById('year').value;
+    if (!deptIds.length || !section || !level || !semester || !year) {
+      alert('Please select departments, section, level, semester, academic year, and exam type.');
+      return;
+    }
+    const res = await fetch('{% url "api_materials" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+      body: JSON.stringify({
+        department_ids: deptIds,
+        section,
+        level,
+        semester,
+        academic_year_id: parseInt(year, 10),
+        session_type: document.getElementById('exam-type').value,
+      }),
+    });
+    let data;
+    try {
+      data = await res.json();
+    } catch (e) {
+      alert('Server error while loading materials. Stop the server (Ctrl+C) and run: python manage.py runserver');
+      return;
+    }
+    if (!res.ok) {
+      alert(data.error || 'Could not load materials');
+      return;
+    }
+    const ul = document.getElementById('material-list');
+    ul.innerHTML = '';
+    const yearId = document.getElementById('year').value;
+    const examTypeRaw = document.getElementById('exam-type').value;
+    const examType = examTypeRaw === 'tp' ? 'partial' : examTypeRaw;
+    if (!data.materials.length) {
+      const li = document.createElement('li');
+      li.className = 'muted';
+      li.textContent = 'No materials found for the selected filters and session type.';
+      ul.appendChild(li);
+    } else {
+      data.materials.forEach((m) => {
+        const li = document.createElement('li');
+        const parts = [];
+        if (m.can_first) {
+          parts.push(`<a class="btn small primary" href="/grading/${m.id}/${yearId}/${examType}/first/">First corrector</a>`);
+        }
+        if (m.can_second) {
+          parts.push(`<a class="btn small" href="/grading/${m.id}/${yearId}/${examType}/second/">Second corrector</a>`);
+        }
+        const actionsHtml = parts.length
+          ? parts.join(' ')
+          : '<span class="muted small">—</span>';
+        li.innerHTML = `<span>${m.label}</span><span class="actions">${actionsHtml}</span>`;
+        ul.appendChild(li);
+      });
+    }
+    document.getElementById('materials-box').classList.remove('hidden');
+  });
+
+  const markRead = document.getElementById('btn-mark-read');
+  if (markRead) {
+    markRead.addEventListener('click', async () => {
+      await fetch('{% url "api_notifications_read" %}', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
+      });
+      location.reload();
+    });
+  }
+</script>
+{% endblock %}

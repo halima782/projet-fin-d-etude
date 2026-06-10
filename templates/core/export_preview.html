@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Export preview{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="row-between">
+    <div>
+      <h1>
+        {% if kind == "my_marks" %}
+        My final marks /100
+        {% else %}
+        Averages between correctors
+        {% endif %}
+      </h1>
+      <p class="muted">
+        {{ material_name }} — {{ section_name }} — {{ year_label }} — {{ session_label }} exam
+      </p>
+      <p class="muted small">{{ role_label }}</p>
+    </div>
+    <div class="row-actions" style="flex-wrap:wrap;gap:0.35rem;">
+      {% if kind == "my_marks" %}
+      <a class="btn primary" href="{% url 'printable_final_marks' ms_id year_id session_type role %}" target="_blank" rel="noopener">
+        Print out
+      </a>
+      {% else %}
+      <a class="btn primary" href="{% url 'printable_final_averages' ms_id year_id session_type %}" target="_blank" rel="noopener">
+        Print out
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="table-wrap scroll" style="margin-top:1rem;">
+    <table class="sheet">
+      <thead>
+        {% if kind == "my_marks" %}
+        <tr>
+          <th>Exam #</th>
+          <th>Total /100</th>
+        </tr>
+        {% else %}
+        <tr>
+          <th>Exam #</th>
+          <th>First /100</th>
+          <th>Second /100</th>
+          <th>Average /100</th>
+          <th>Difference</th>
+        </tr>
+        {% endif %}
+      </thead>
+      <tbody>
+        {% for r in rows %}
+          {% if kind == "my_marks" %}
+          <tr>
+            <td>{{ r.exam_number }}</td>
+            <td>{{ r.total }}</td>
+          </tr>
+          {% else %}
+          <tr class="{% if r.highlight %}row-warn{% endif %}{% if r.pending %} muted{% endif %}">
+            <td>{{ r.exam_number }}</td>
+            <td>{{ r.first_total }}</td>
+            <td>{{ r.second_total }}</td>
+            <td>{{ r.average }}</td>
+            <td>{{ r.difference }}</td>
+          </tr>
+          {% endif %}
+        {% empty %}
+        <tr><td colspan="5" class="muted">No rows to show.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Final Examination Confrontation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .diff-alert { background-color: #f8d7da !important; color: #842029 !important; font-weight: bold; }
+        .table-hover tbody tr:hover { background-color: #f1f1f1; }
+    </style>
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Final Marks & Confrontation</h2>
+        <button class="btn btn-success" onclick="window.print()">Download as PDF / Print</button>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <h5 class="text-muted mb-3">Material: {{ material_section.material.material_name }}</h5>
+            <table class="table table-bordered table-hover text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Exam Number</th>
+                        <th>First Corrector (Total)</th>
+                        <th>Second Corrector (Total)</th>
+                        <th>Difference</th>
+                        <th>Final Average (100)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in final_results %}
+                    <tr {% if result.difference > 10 %} class="diff-alert" {% endif %}>
+                        <td>{{ result.exam.exam_number }}</td>
+                        <td>{{ result.first_total }}</td>
+                        <td>{{ result.second_total }}</td>
+                        <td>{{ result.difference }}</td>
+                        <td>{{ result.average }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a href="{% url 'corrector_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+</body>
+</html>

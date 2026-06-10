@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Error{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Access denied</h1>
+  <p>{{ message }}</p>
+  <p><a href="{% url 'dashboard' %}">Back to dashboard</a></p>
+</section>
+{% endblock %}
